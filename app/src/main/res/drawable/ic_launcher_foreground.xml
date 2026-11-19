@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Minimal crisp white card container with very soft subtle rounded contour -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 32,22 L 76,22 A 16,16 0 0 1 92,38 L 92,82 A 16,16 0 0 1 76,98 L 32,98 A 16,16 0 0 1 16,82 L 16,38 A 16,16 0 0 1 32,22 Z" />
+    <path
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1.2"
+        android:fillColor="#00000000"
+        android:pathData="M 32,22 L 76,22 A 16,16 0 0 1 92,38 L 92,82 A 16,16 0 0 1 76,98 L 32,98 A 16,16 0 0 1 16,82 L 16,38 A 16,16 0 0 1 32,22 Z" />
+
+    <!-- Pure, elegant, beautifully balanced Kannada letter 'ಟ' (Ta) in deep obsidian (#0F172A) -->
+    <!-- Top rounded horizontal serif / bar -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M 36,36 C 36,34 38,32 41,32 L 67,32 C 70,32 72,34 72,36 C 72,38 70,40 67,40 L 58,40 L 58,47 C 69,48 76,55 76,66 C 76,77 66,85 54,85 C 41,85 32,76 32,64 C 32,59 34,55 38,51 C 39.2,49.8 41.2,50 42.2,51.2 C 43.2,52.4 43,54.4 41.8,55.6 C 39.5,58 38.5,61 38.5,64 C 38.5,72 45,78.5 54,78.5 C 62.5,78.5 69.5,72.5 69.5,65.5 C 69.5,57.5 63,52.5 54,52 C 52,51.8 51,50.5 51,48.5 L 51,40 L 41,40 C 38,40 36,38 36,36 Z" />
+
+    <!-- Pure minimalist warm coral dot / tittle accent (#E11D48) -->
+    <path
+        android:fillColor="#E11D48"
+        android:pathData="M 54,58 A 3.2,3.2 0 1 0 54,64.4 A 3.2,3.2 0 1 0 54,58 Z" />
+</vector>

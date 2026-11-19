@@ -1,0 +1,6 @@
+{
+  "name": "Tippani",
+  "description": "Minimal, elegant offline notes app with notebooks, tags, search, backups, statistics, and customizable themes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
