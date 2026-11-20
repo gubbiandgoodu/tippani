@@ -4,7 +4,23 @@ data class NotebookCategory(
     val id: String,
     val name: String,
     val iconName: String,
-    val colorHex: Long
+    val colorHex: Long,
+    val isPinned: Boolean = false,
+    val isLocked: Boolean = false,
+    val pinnedAt: Long = 0L
+)
+
+val FALLBACK_BOOK = NotebookCategory("personal", "General", "menu_book", 0xFF6366F1)
+
+val BOOK_COLOR_OPTIONS = listOf(
+    0xFF6366F1L, // Indigo
+    0xFF0EA5E9L, // Sky Blue
+    0xFFF59E0BL, // Amber
+    0xFF10B981L, // Emerald
+    0xFFEC4899L, // Pink
+    0xFF8B5CF6L, // Violet
+    0xFFF97316L, // Orange
+    0xFF14B8A6L  // Teal
 )
 
 val DEFAULT_CATEGORIES = listOf(

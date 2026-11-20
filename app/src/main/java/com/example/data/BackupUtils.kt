@@ -1,6 +1,9 @@
 package com.example.data
 
+import com.example.model.NOTE_FORMAT_NOTES
 import com.example.model.Note
+import com.example.model.TagUtils
+import com.example.model.normalizeNoteFormat
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.SimpleDateFormat
@@ -105,12 +108,19 @@ object BackupUtils {
                 .ifBlank { obj.optString("category", "personal") }
                 .ifBlank { "personal" }
 
-            val noteType = obj.optString("noteType", "")
-                .ifBlank { obj.optString("type", "Quick Note") }
-                .ifBlank { "Quick Note" }
+            val rawNoteType = obj.optString("noteType", "")
+                .ifBlank { obj.optString("type", NOTE_FORMAT_NOTES) }
+            val noteType = normalizeNoteFormat(rawNoteType)
 
             val createdAt = obj.optLong("createdAt", now).let { if (it > 0L) it else now }
             val updatedAt = obj.optLong("updatedAt", createdAt).let { if (it > 0L) it else createdAt }
+
+            val restoredTags = if (noteType == NOTE_FORMAT_NOTES) {
+                val detected = TagUtils.extractTagsString(title, content, noteType)
+                detected.ifBlank { obj.optString("tags", "") }
+            } else {
+                ""
+            }
 
             parsedNotes.add(
                 Note(
@@ -119,7 +129,7 @@ object BackupUtils {
                     content = content,
                     categoryId = categoryId,
                     noteType = noteType,
-                    tags = obj.optString("tags", ""),
+                    tags = restoredTags,
                     isPinned = false,
                     isArchived = obj.optBoolean("isArchived", false),
                     wordCount = wordCount,

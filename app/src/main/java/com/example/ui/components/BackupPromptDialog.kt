@@ -3,6 +3,7 @@ package com.example.ui.components
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -43,12 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.LocalBackupHelper
 import com.example.ui.theme.AccentGreen
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CleanBackground
-import com.example.ui.theme.DarkNavActive
-import com.example.ui.theme.TextMuted
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.TippaniTheme
 import com.example.viewmodel.TippaniViewModel
 
 @Composable
@@ -57,6 +52,7 @@ fun BackupPromptDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val colors = TippaniTheme.colors
     val hasBackupFolder by viewModel.hasBackupFolder.collectAsState()
     val backupFolderName by viewModel.backupFolderName.collectAsState()
     val promptBackupOnOpen by viewModel.promptBackupOnOpen.collectAsState()
@@ -90,13 +86,13 @@ fun BackupPromptDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = Modifier.testTag("backup_prompt_dialog"),
-        containerColor = CardBackground,
+        containerColor = colors.surface,
         shape = RoundedCornerShape(28.dp),
         icon = {
             Icon(
                 imageVector = Icons.Default.Storage,
                 contentDescription = "Backup Notes",
-                tint = TextPrimary,
+                tint = colors.accent,
                 modifier = Modifier.size(32.dp)
             )
         },
@@ -105,7 +101,7 @@ fun BackupPromptDialog(
                 text = "Backup Notes",
                 fontSize = 21.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = TextPrimary,
+                color = colors.textPrimary,
                 textAlign = TextAlign.Center
             )
         },
@@ -115,7 +111,7 @@ fun BackupPromptDialog(
                     Text(
                         text = "Keep your notes safe even if the app is uninstalled. Would you like to create a new backup now?",
                         fontSize = 14.sp,
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         lineHeight = 20.sp
                     )
 
@@ -123,7 +119,8 @@ fun BackupPromptDialog(
 
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = CleanBackground,
+                        color = colors.surfaceVariant,
+                        border = colors.cardBorder,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -141,13 +138,13 @@ fun BackupPromptDialog(
                                 Text(
                                     text = "Saved Folder",
                                     fontSize = 11.sp,
-                                    color = TextMuted
+                                    color = colors.textMuted
                                 )
                                 Text(
                                     text = backupFolderName ?: "Selected Folder",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = TextPrimary,
+                                    color = colors.textPrimary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -158,7 +155,7 @@ fun BackupPromptDialog(
                     Text(
                         text = "Pick a folder on your phone for automatic daily backups that survive app uninstalls, or export an offline backup file now.",
                         fontSize = 14.sp,
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         lineHeight = 20.sp
                     )
 
@@ -169,6 +166,7 @@ fun BackupPromptDialog(
                             exportDocumentLauncher.launch(LocalBackupHelper.defaultBackupFileName())
                         },
                         shape = RoundedCornerShape(14.dp),
+                        border = BorderStroke(1.dp, colors.border),
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("backup_dialog_export_btn")
@@ -176,7 +174,7 @@ fun BackupPromptDialog(
                         Icon(
                             imageVector = Icons.Default.Download,
                             contentDescription = null,
-                            tint = TextPrimary,
+                            tint = colors.textPrimary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -184,7 +182,7 @@ fun BackupPromptDialog(
                             text = "Export Backup JSON File",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextPrimary
+                            color = colors.textPrimary
                         )
                     }
                 }
@@ -209,8 +207,9 @@ fun BackupPromptDialog(
                             viewModel.setPromptBackupOnOpen(!checked)
                         },
                         colors = CheckboxDefaults.colors(
-                            checkedColor = DarkNavActive,
-                            checkmarkColor = Color.White
+                            checkedColor = colors.accent,
+                            checkmarkColor = colors.onAccent,
+                            uncheckedColor = colors.textMuted
                         ),
                         modifier = Modifier.testTag("backup_dialog_dont_prompt_checkbox")
                     )
@@ -218,7 +217,7 @@ fun BackupPromptDialog(
                     Text(
                         text = "Don't prompt on app open (manage in Settings)",
                         fontSize = 13.sp,
-                        color = TextSecondary,
+                        color = colors.textSecondary,
                         lineHeight = 17.sp
                     )
                 }
@@ -232,7 +231,7 @@ fun BackupPromptDialog(
                 Text(
                     text = "Later",
                     fontSize = 14.sp,
-                    color = TextSecondary,
+                    color = colors.textSecondary,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -249,28 +248,32 @@ fun BackupPromptDialog(
                         onDismiss()
                     },
                     shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkNavActive),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.accent,
+                        contentColor = colors.onAccent
+                    ),
                     modifier = Modifier.testTag("backup_dialog_backup_btn")
                 ) {
                     Text(
                         text = "Backup Now",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             } else {
                 Button(
                     onClick = { folderPickerLauncher.launch(null) },
                     shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkNavActive),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.accent,
+                        contentColor = colors.onAccent
+                    ),
                     modifier = Modifier.testTag("backup_dialog_select_folder_btn")
                 ) {
                     Text(
                         text = "Select Folder",
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }

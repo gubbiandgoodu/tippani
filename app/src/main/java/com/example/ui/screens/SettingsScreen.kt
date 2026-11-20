@@ -3,7 +3,9 @@ package com.example.ui.screens
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,11 +25,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayArrow
@@ -65,23 +70,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.AppAppearanceMode
 import com.example.data.AppThemeMode
 import com.example.data.LocalBackupHelper
 import com.example.ui.theme.AccentBlue
 import com.example.ui.theme.AccentGreen
 import com.example.ui.theme.AccentPurple
-import com.example.ui.theme.CardBackground
-import com.example.ui.theme.CleanBackground
 import com.example.ui.theme.DangerRed
-import com.example.ui.theme.DarkNavActive
-import com.example.ui.theme.SoftIconBgAmber
-import com.example.ui.theme.SoftIconBgGreen
-import com.example.ui.theme.SoftIconBgRed
-import com.example.ui.theme.SoftIconBgSlate
-import com.example.ui.theme.SoftIconBgTeal
-import com.example.ui.theme.TextMuted
-import com.example.ui.theme.TextPrimary
-import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.TippaniTheme
 import com.example.viewmodel.TippaniViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,16 +87,17 @@ fun SettingsScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val colors = TippaniTheme.colors
+    val currentAppearance by viewModel.currentAppearanceMode.collectAsState()
     val currentTheme by viewModel.currentThemeMode.collectAsState()
-    val categories by viewModel.categories.collectAsState()
 
     val hasBackupFolder by viewModel.hasBackupFolder.collectAsState()
     val backupFolderName by viewModel.backupFolderName.collectAsState()
     val lastBackupTime by viewModel.lastBackupTime.collectAsState()
     val promptBackupOnOpen by viewModel.promptBackupOnOpen.collectAsState()
 
+    var showAppearanceDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
-    var showCategoriesDialog by remember { mutableStateOf(false) }
     var showClearConfirmDialog by remember { mutableStateOf(false) }
     var restoredNotesCount by remember { mutableStateOf<Int?>(null) }
 
@@ -152,7 +149,7 @@ fun SettingsScreen(
                         text = "Settings",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
+                        color = colors.textPrimary
                     )
                 },
                 navigationIcon = {
@@ -160,14 +157,14 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = TextPrimary
+                            tint = colors.textPrimary
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = CleanBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
             )
         },
-        containerColor = CleanBackground
+        containerColor = colors.background
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -179,64 +176,7 @@ fun SettingsScreen(
             item {
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // 1. App Brand Card (Tippani • Minimal Offline Notes)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Minimal Light Theme Logo with Kannada letter ಟ
-                        Box(
-                            modifier = Modifier
-                                .size(54.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "ಟ",
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0F172A)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column {
-                            Text(
-                                text = "Tippani",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextPrimary
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Minimal Offline Notes & Journal",
-                                fontSize = 13.sp,
-                                color = TextSecondary
-                            )
-                            Spacer(modifier = Modifier.height(3.dp))
-                            Text(
-                                text = "Version 1.0  •  Offline & Private",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = AccentGreen
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // 2. Unified Backup & Restore Section Header
+                // 1. Unified Backup & Restore Section Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -246,12 +186,12 @@ fun SettingsScreen(
                         text = "Backup & Restore",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = TextSecondary
+                        color = colors.textSecondary
                     )
 
                     Surface(
                         shape = RoundedCornerShape(999.dp),
-                        color = Color(0xFFECFDF5)
+                        color = colors.greenBadgeBg
                     ) {
                         Text(
                             text = "Daily Default",
@@ -269,8 +209,9 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         // 1) Clickable Backup Folder Row (launches OpenDocumentTree)
@@ -292,13 +233,16 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(CircleShape)
-                                        .background(if (hasBackupFolder) SoftIconBgGreen else SoftIconBgSlate),
+                                        .background(
+                                            if (hasBackupFolder) colors.softIconBg(AccentGreen)
+                                            else colors.accentSoft
+                                        ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Folder,
                                         contentDescription = "Backup Folder",
-                                        tint = if (hasBackupFolder) AccentGreen else TextPrimary,
+                                        tint = if (hasBackupFolder) AccentGreen else colors.accent,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
@@ -307,13 +251,13 @@ fun SettingsScreen(
                                     Text(
                                         text = "Backup Folder",
                                         fontSize = 12.sp,
-                                        color = TextSecondary
+                                        color = colors.textSecondary
                                     )
                                     Text(
                                         text = backupFolderName ?: "No folder selected",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = if (hasBackupFolder) TextPrimary else TextMuted,
+                                        color = if (hasBackupFolder) colors.textPrimary else colors.textMuted,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -328,7 +272,7 @@ fun SettingsScreen(
                                     text = if (hasBackupFolder) "Change" else "Choose",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = DarkNavActive
+                                    color = colors.accent
                                 )
                             }
                         }
@@ -344,12 +288,12 @@ fun SettingsScreen(
                             Text(
                                 text = "Last Backup:",
                                 fontSize = 13.sp,
-                                color = TextMuted
+                                color = colors.textMuted
                             )
                             Text(
                                 text = lastBackupTime ?: "Pending next auto-backup",
                                 fontSize = 13.sp,
-                                color = if (lastBackupTime != null) AccentGreen else TextSecondary,
+                                color = if (lastBackupTime != null) AccentGreen else colors.textSecondary,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -467,8 +411,9 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -480,7 +425,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(SoftIconBgTeal),
+                                .background(colors.softIconBg(AccentGreen)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -498,13 +443,13 @@ fun SettingsScreen(
                                 text = "Prompt backup on app open",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = TextPrimary
+                                color = colors.textPrimary
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Show a reminder dialog to back up whenever the app is opened",
                                 fontSize = 12.sp,
-                                color = TextSecondary,
+                                color = colors.textSecondary,
                                 lineHeight = 16.sp
                             )
                         }
@@ -517,8 +462,11 @@ fun SettingsScreen(
                                 viewModel.setPromptBackupOnOpen(enabled)
                             },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = DarkNavActive
+                                checkedThumbColor = colors.onAccent,
+                                checkedTrackColor = colors.accent,
+                                uncheckedThumbColor = colors.textMuted,
+                                uncheckedTrackColor = colors.surfaceVariant,
+                                uncheckedBorderColor = colors.border
                             ),
                             modifier = Modifier.testTag("prompt_backup_switch")
                         )
@@ -527,12 +475,12 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 3. Preferences & Categories Section Header
+                // 2. Appearance Section Header
                 Text(
-                    text = "Preferences & Notebooks",
+                    text = "Appearance",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
+                    color = colors.textSecondary
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -540,11 +488,61 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        // Theme Color Row
+                        // App Theme Row (Light / Dark / Black AMOLED / System)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showAppearanceDialog = true }
+                                .padding(horizontal = 18.dp, vertical = 14.dp)
+                                .testTag("app_theme_mode_row"),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(colors.accentSoft),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = when (currentAppearance) {
+                                        AppAppearanceMode.LIGHT -> Icons.Default.LightMode
+                                        AppAppearanceMode.DARK -> Icons.Default.DarkMode
+                                        AppAppearanceMode.BLACK -> Icons.Default.DarkMode
+                                        AppAppearanceMode.SYSTEM -> Icons.Default.Contrast
+                                    },
+                                    contentDescription = "App Theme",
+                                    tint = colors.accent,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "App Theme",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colors.textPrimary
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${currentAppearance.title} • ${currentAppearance.subtitle}",
+                                    fontSize = 12.sp,
+                                    color = colors.textSecondary
+                                )
+                            }
+
+                            AppearancePreviewBadge(mode = currentAppearance)
+                        }
+
+                        // Theme Accent Color Row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -557,13 +555,13 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(SoftIconBgSlate),
+                                    .background(colors.accentSoft),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Palette,
-                                    contentDescription = null,
-                                    tint = TextPrimary,
+                                    contentDescription = "Theme Accent",
+                                    tint = colors.accent,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -575,111 +573,23 @@ fun SettingsScreen(
                                     text = "Theme Accent",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = TextPrimary
+                                    color = colors.textPrimary
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "${currentTheme.title} (Tap to change)",
                                     fontSize = 12.sp,
-                                    color = TextSecondary
+                                    color = colors.textSecondary
                                 )
                             }
 
                             Box(
                                 modifier = Modifier
-                                    .size(22.dp)
+                                    .size(24.dp)
                                     .clip(CircleShape)
-                                    .background(Color(currentTheme.colorHex))
+                                    .background(colors.accent)
+                                    .border(1.5.dp, colors.border, CircleShape)
                             )
-                        }
-
-                        // Categories / Notebooks Row
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { showCategoriesDialog = true }
-                                .padding(horizontal = 18.dp, vertical = 14.dp)
-                                .testTag("categories_row"),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(SoftIconBgAmber),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Category,
-                                    contentDescription = null,
-                                    tint = Color(0xFFF59E0B),
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Notebooks & Categories",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = TextPrimary
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "${categories.size} notebooks  •  Default: Personal",
-                                    fontSize = 12.sp,
-                                    color = TextSecondary
-                                )
-                            }
-
-                            Text(
-                                text = "+",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextPrimary
-                            )
-                        }
-
-                        // Default Note Format Row
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 18.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(SoftIconBgTeal),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Bookmark,
-                                    contentDescription = null,
-                                    tint = AccentGreen,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Default Format",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = TextPrimary
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "Quick Note & Markdown",
-                                    fontSize = 12.sp,
-                                    color = TextSecondary
-                                )
-                            }
                         }
                     }
                 }
@@ -691,7 +601,7 @@ fun SettingsScreen(
                     text = "Data Management",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
+                    color = colors.textSecondary
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -699,8 +609,9 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Column(modifier = Modifier.padding(vertical = 6.dp)) {
                         // Load Sample Data
@@ -716,7 +627,7 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(SoftIconBgTeal),
+                                    .background(colors.softIconBg(AccentGreen)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -734,13 +645,13 @@ fun SettingsScreen(
                                     text = "Load Sample Notes",
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = TextPrimary
+                                    color = colors.textPrimary
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "Populate realistic sample notes to explore layouts",
                                     fontSize = 12.sp,
-                                    color = TextSecondary
+                                    color = colors.textSecondary
                                 )
                             }
                         }
@@ -758,7 +669,7 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(SoftIconBgRed),
+                                    .background(colors.softIconBg(DangerRed)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -782,7 +693,7 @@ fun SettingsScreen(
                                 Text(
                                     text = "Permanently remove all notes and journals",
                                     fontSize = 12.sp,
-                                    color = TextSecondary
+                                    color = colors.textSecondary
                                 )
                             }
                         }
@@ -796,7 +707,7 @@ fun SettingsScreen(
                     text = "Privacy",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
+                    color = colors.textSecondary
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -804,8 +715,9 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -817,7 +729,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(SoftIconBgTeal),
+                                .background(colors.softIconBg(AccentGreen)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -835,13 +747,13 @@ fun SettingsScreen(
                                 text = "100% On-Device & Private",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = TextPrimary
+                                color = colors.textPrimary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Your notes and thoughts stay strictly on your device and inside your chosen backup folder. No third-party servers.",
                                 fontSize = 12.sp,
-                                color = TextSecondary,
+                                color = colors.textSecondary,
                                 lineHeight = 17.sp
                             )
                         }
@@ -855,7 +767,7 @@ fun SettingsScreen(
                     text = "Developer",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
+                    color = colors.textSecondary
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -863,8 +775,9 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+                    colors = CardDefaults.cardColors(containerColor = colors.surface),
+                    border = colors.cardBorder,
+                    elevation = CardDefaults.cardElevation(defaultElevation = if (colors.isDark) 0.dp else 0.5.dp)
                 ) {
                     Row(
                         modifier = Modifier
@@ -876,13 +789,13 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFE2E8F0)),
+                                .background(colors.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Bookmark,
                                 contentDescription = null,
-                                tint = TextPrimary,
+                                tint = colors.textPrimary,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -894,13 +807,13 @@ fun SettingsScreen(
                                 text = "Tippani Notes Studio",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = TextPrimary
+                                color = colors.textPrimary
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Minimal Local Architecture",
                                 fontSize = 12.sp,
-                                color = TextSecondary
+                                color = colors.textSecondary
                             )
                         }
                     }
@@ -914,7 +827,7 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { restoredNotesCount = null },
             modifier = Modifier.testTag("restore_confirmation_dialog"),
-            containerColor = CardBackground,
+            containerColor = colors.surface,
             shape = RoundedCornerShape(24.dp),
             icon = {
                 Icon(
@@ -928,7 +841,7 @@ fun SettingsScreen(
                 Text(
                     text = "Restore Complete",
                     fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
+                    color = colors.textPrimary
                 )
             },
             text = {
@@ -936,92 +849,167 @@ fun SettingsScreen(
                 Text(
                     text = "$label restored from your backup file and added to Tippani.",
                     fontSize = 14.sp,
-                    color = TextSecondary
+                    color = colors.textSecondary
                 )
             },
             confirmButton = {
                 Button(
                     onClick = { restoredNotesCount = null },
                     shape = RoundedCornerShape(18.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkNavActive),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.accent,
+                        contentColor = colors.onAccent
+                    ),
                     modifier = Modifier.testTag("restore_confirm_ok_btn")
                 ) {
-                    Text("Done", color = Color.White)
+                    Text("Done")
                 }
             }
         )
     }
 
-    // Theme Chooser Dialog
+    // App Theme Chooser Dialog (Light, Dark, Black AMOLED, System Default)
+    if (showAppearanceDialog) {
+        AlertDialog(
+            onDismissRequest = { showAppearanceDialog = false },
+            modifier = Modifier.testTag("app_theme_dialog"),
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = "Choose App Theme",
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppAppearanceMode.entries.forEach { mode ->
+                        val isSelected = mode == currentAppearance
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isSelected) colors.accentSoft else colors.surfaceVariant,
+                            border = if (isSelected) BorderStroke(1.5.dp, colors.accent) else null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable {
+                                    viewModel.setAppearanceMode(mode)
+                                    showAppearanceDialog = false
+                                }
+                                .testTag("theme_option_${mode.name.lowercase()}")
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AppearancePreviewBadge(mode = mode)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = mode.title,
+                                        fontSize = 15.sp,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                                        color = colors.textPrimary
+                                    )
+                                    Text(
+                                        text = mode.subtitle,
+                                        fontSize = 12.sp,
+                                        color = colors.textSecondary
+                                    )
+                                }
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Selected",
+                                        tint = colors.accent,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAppearanceDialog = false }) {
+                    Text("Close", color = colors.accent)
+                }
+            }
+        )
+    }
+
+    // Theme Accent Chooser Dialog
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text("Choose Theme Accent") },
+            modifier = Modifier.testTag("theme_accent_dialog"),
+            containerColor = colors.surface,
+            shape = RoundedCornerShape(24.dp),
+            title = {
+                Text(
+                    text = "Choose Theme Accent",
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.textPrimary
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     AppThemeMode.entries.forEach { mode ->
-                        Row(
+                        val isSelected = mode == currentTheme
+                        val swatchColor = Color(if (colors.isDark) mode.darkColorHex else mode.colorHex)
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isSelected) colors.accentSoft else colors.surfaceVariant,
+                            border = if (isSelected) BorderStroke(1.5.dp, colors.accent) else null,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(14.dp))
                                 .clickable {
                                     viewModel.setThemeMode(mode)
                                     showThemeDialog = false
                                 }
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .testTag("accent_option_${mode.name.lowercase()}")
                         ) {
-                            Box(
+                            Row(
                                 modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(mode.colorHex))
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = mode.title,
-                                fontSize = 15.sp,
-                                fontWeight = if (mode == currentTheme) FontWeight.Bold else FontWeight.Normal
-                            )
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .background(swatchColor)
+                                        .border(1.dp, colors.border, CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = mode.title,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = colors.textPrimary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Selected",
+                                        tint = colors.accent,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { showThemeDialog = false }) {
-                    Text("Close")
-                }
-            }
-        )
-    }
-
-    // Categories Dialog
-    if (showCategoriesDialog) {
-        AlertDialog(
-            onDismissRequest = { showCategoriesDialog = false },
-            title = { Text("Notebook Categories (${categories.size})") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    categories.forEach { cat ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(cat.colorHex))
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = cat.name, fontSize = 14.sp, color = TextPrimary)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showCategoriesDialog = false }) {
-                    Text("Done")
+                    Text("Close", color = colors.accent)
                 }
             }
         )
@@ -1031,9 +1019,13 @@ fun SettingsScreen(
     if (showClearConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showClearConfirmDialog = false },
-            title = { Text("Clear All Notes?") },
+            containerColor = colors.surface,
+            title = { Text("Clear All Notes?", color = colors.textPrimary) },
             text = {
-                Text("This action will permanently delete all active and archived notes. Make sure you have created a backup.")
+                Text(
+                    text = "This action will permanently delete all active and archived notes. Make sure you have created a backup.",
+                    color = colors.textSecondary
+                )
             },
             confirmButton = {
                 Button(
@@ -1048,9 +1040,83 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearConfirmDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = colors.textSecondary)
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun AppearancePreviewBadge(mode: AppAppearanceMode) {
+    val borderColor = TippaniTheme.colors.border
+    when (mode) {
+        AppAppearanceMode.LIGHT -> {
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF8FAFC))
+                    .border(1.5.dp, Color(0xFFCBD5E1), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF0F172A))
+                )
+            }
+        }
+        AppAppearanceMode.DARK -> {
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF18202C))
+                    .border(1.5.dp, Color(0xFF475569), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF94A3B8))
+                )
+            }
+        }
+        AppAppearanceMode.BLACK -> {
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF000000))
+                    .border(1.5.dp, Color(0xFF3F3F46), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFF8FAFC))
+                )
+            }
+        }
+        AppAppearanceMode.SYSTEM -> {
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF0F172A))
+                    .border(1.5.dp, borderColor, CircleShape),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 13.dp, height = 26.dp)
+                        .background(Color(0xFFF8FAFC))
+                )
+            }
+        }
     }
 }

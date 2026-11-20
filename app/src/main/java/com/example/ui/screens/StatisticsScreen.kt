@@ -104,7 +104,7 @@ fun StatisticsScreen(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Notebook & Vocabulary Analytics",
+                    text = "Book & Vocabulary Analytics",
                     fontSize = 14.sp,
                     color = TextSecondary
                 )
@@ -246,7 +246,7 @@ fun StatisticsScreen(
 
                             Column {
                                 Text(
-                                    text = "Top Notebook",
+                                    text = "Top Book",
                                     fontSize = 12.sp,
                                     color = TextSecondary
                                 )
@@ -394,7 +394,7 @@ fun StatisticsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Distribution by Notebook",
+                        text = "Distribution by Book",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = TextPrimary
@@ -409,7 +409,7 @@ fun StatisticsScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Tap any notebook to filter notes",
+                    text = "Tap any book to filter notes",
                     fontSize = 13.sp,
                     color = TextSecondary
                 )

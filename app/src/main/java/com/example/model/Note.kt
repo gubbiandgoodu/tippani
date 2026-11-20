@@ -10,7 +10,7 @@ data class Note(
     val title: String,
     val content: String,
     val categoryId: String = "personal",
-    val noteType: String = "Quick Note", // Note, Checklist, Meeting, Journal, Draft
+    val noteType: String = NOTE_FORMAT_NOTES, // Notes or Checklist
     val tags: String = "", // Comma-separated tags
     val isPinned: Boolean = false,
     val isArchived: Boolean = false,
